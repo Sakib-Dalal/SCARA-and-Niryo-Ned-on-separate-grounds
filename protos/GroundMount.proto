@@ -1,0 +1,95 @@
+#VRML_SIM R2025a utf8
+# Steel floor plate and four visible anchor bolts. All dimensions are metres.
+# The robot itself must also set staticBase TRUE; these bolts are visual hardware.
+# template language: javascript
+
+PROTO GroundMount [
+  field SFVec3f translation 0 0 0
+  field SFString name "ground mount"
+  field SFVec3f plateSize 0.34 0.28 0.012
+  field SFVec2f anchorInset 0.035 0.035
+  field SFFloat boltDiameter 0.012
+]
+{
+  %<
+    const size = fields.plateSize.value;
+    const inset = fields.anchorInset.value;
+    const diameter = fields.boltDiameter.value;
+  >%
+  Solid {
+    translation IS translation
+    name IS name
+    locked TRUE
+    children [
+      Pose {
+        translation 0 0 %<= size.z / 2 >%
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.19 0.23 0.28
+              metalness 0.8
+              roughness 0.38
+            }
+            geometry Box { size IS plateSize }
+          }
+        ]
+      }
+      %< for (const x of [-1, 1]) { for (const y of [-1, 1]) { >%
+      Pose {
+        translation %<= x * (size.x / 2 - inset.x) >% %<= y * (size.y / 2 - inset.y) >% %<= size.z >%
+        children [
+          # Anchor shaft extends into the floor, washer rests on the plate.
+          Pose {
+            translation 0 0 %<= -diameter * 3 >%
+            children [
+              Shape {
+                appearance DEF ZINC PBRAppearance {
+                  baseColor 0.68 0.73 0.78
+                  metalness 0.85
+                  roughness 0.26
+                }
+                geometry Cylinder {
+                  radius %<= diameter / 2 >%
+                  height %<= diameter * 6 >%
+                  subdivision 16
+                }
+              }
+            ]
+          }
+          Pose {
+            translation 0 0 %<= diameter * 0.1 >%
+            children [
+              Shape {
+                appearance USE ZINC
+                geometry Cylinder {
+                  radius %<= diameter >%
+                  height %<= diameter * 0.2 >%
+                  subdivision 24
+                }
+              }
+            ]
+          }
+          Pose {
+            translation 0 0 %<= diameter * 0.525 >%
+            children [
+              Shape {
+                appearance USE ZINC
+                geometry Cylinder {
+                  radius %<= diameter * 0.9 >%
+                  height %<= diameter * 0.65 >%
+                  subdivision 6
+                }
+              }
+            ]
+          }
+        ]
+      }
+      %< } } >%
+    ]
+    boundingObject Pose {
+      translation 0 0 %<= size.z / 2 >%
+      children [ Box { size IS plateSize } ]
+    }
+    # No Physics node: the plate is rigidly fixed to the static environment.
+  }
+}

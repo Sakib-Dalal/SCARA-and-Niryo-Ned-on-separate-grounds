@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "simulated_seconds": 12.0,
+  "floor_metres": [
+    10.0,
+    10.0
+  ],
+  "maximum_base_pose_change": {
+    "SCARA": 0.0,
+    "ABB": 0.0
+  },
+  "measured_base_joint_range_radians": {
+    "SCARA": [
+      -0.19916430696435317,
+      0.1991655005955397
+    ],
+    "ABB": [
+      -0.1991714441903243,
+      0.1991726325674387
+    ]
+  },
+  "static_base": {
+    "SCARA": 1,
+    "ABB": 1
+  }
+}

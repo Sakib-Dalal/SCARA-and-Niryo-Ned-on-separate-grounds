@@ -1,0 +1,56 @@
+#VRML_SIM R2025a utf8
+# Visual fasteners seated in the supplied robot meshes' mounting holes.
+# positions specify washer undersides, in metres; staticBase supplies fixation.
+# template language: javascript
+
+PROTO FlangeBolts [
+  field SFVec3f translation 0 0 0
+  field MFVec3f positions []
+  field SFFloat diameter 0.008
+]
+{
+  %< const d = fields.diameter.value; >%
+  Pose {
+    translation IS translation
+    children [
+      %< for (const p of fields.positions.value) { >%
+      Pose {
+        translation %<= p.x >% %<= p.y >% %<= p.z >%
+        children [
+          Pose {
+            translation 0 0 %<= -d * 1.5 >%
+            children [
+              Shape {
+                appearance DEF STEEL PBRAppearance {
+                  baseColor 0.64 0.69 0.74
+                  metalness 0.85
+                  roughness 0.3
+                }
+                geometry Cylinder { radius %<= d / 2 >% height %<= d * 3 >% subdivision 16 }
+              }
+            ]
+          }
+          Pose {
+            translation 0 0 %<= d * 0.09375 >%
+            children [
+              Shape {
+                appearance USE STEEL
+                geometry Cylinder { radius %<= d * 0.9375 >% height %<= d * 0.1875 >% subdivision 24 }
+              }
+            ]
+          }
+          Pose {
+            translation 0 0 %<= d * 0.5125 >%
+            children [
+              Shape {
+                appearance USE STEEL
+                geometry Cylinder { radius %<= d * 0.9 >% height %<= d * 0.65 >% subdivision 6 }
+              }
+            ]
+          }
+        ]
+      }
+      %< } >%
+    ]
+  }
+}

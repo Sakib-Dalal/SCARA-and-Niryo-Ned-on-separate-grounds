@@ -1,0 +1,93 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/epson/scara_t6/protos/ScaraT6.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/abb/irb/protos/Irb4600-40.proto"
+EXTERNPROTO "../protos/GroundMount.proto"
+EXTERNPROTO "../protos/MetricGrid.proto"
+EXTERNPROTO "../protos/FlangeBolts.proto"
+
+WorldInfo {
+  info [
+    "Metre-scale robot cell: 10 m x 10 m floor; grid spacing 1 m."
+    "Official Webots robot meshes retain their native metre scale."
+    "Both robot bases are fixed with staticBase TRUE."
+  ]
+  basicTimeStep 16
+  gravity 9.81
+}
+DEF OVERVIEW Viewpoint {
+  orientation -0.21121536466003216 0.21121536466003216 0.9543459223274647 1.617661
+  position 1.3503850670992708 -8.897145215293095 4.915814565111148
+  description "Both robots at real-world metre scale"
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+DEF FLOOR RectangleArena {
+  floorSize 10 10
+  floorTileSize 1 1
+  floorAppearance PBRAppearance {
+    baseColor 0.32 0.37 0.43
+    roughness 0.9
+    metalness 0
+  }
+  wallThickness 0.1
+  wallHeight 0.1
+}
+MetricGrid {
+  size 10
+  spacing 1
+}
+DEF ABB_MOUNT GroundMount {
+  translation 1.686881 0 0
+  name "ABB floor plate - four M24 visual anchors"
+  plateSize 0.84 0.7 0.025
+  anchorInset 0.065 0.065
+  boltDiameter 0.024
+}
+DEF ABB Irb4600-40 {
+  # Plate top 0.025 m minus mesh bottom -0.000003 m.
+  translation 1.75 0 0.025003
+  controller "hold_pose"
+  staticBase TRUE
+}
+# Six M16 flange bolts: two per foot, on three radial feet.
+FlangeBolts {
+  translation 1.75 0 0.025003
+  diameter 0.016
+  positions [
+    0.2175 0 0.038
+    0.25 0 0.038
+    -0.10875 0.188361 0.038
+    -0.125 0.216506 0.038
+    -0.10875 -0.188361 0.038
+    -0.125 -0.216506 0.038
+  ]
+}
+DEF SCARA_MOUNT GroundMount {
+  translation 0.013 0 0
+  name "SCARA floor plate - four M12 visual anchors"
+  plateSize 0.34 0.28 0.012
+  boltDiameter 0.012
+}
+DEF SCARA ScaraT6 {
+  # Plate top 0.012 m minus mesh bottom -0.009037 m.
+  translation 0 0 0.021037
+  controller "hold_pose"
+  staticBase TRUE
+}
+# Four M8 flange bolts, aligned to the stock mesh's hole centres.
+FlangeBolts {
+  translation 0 0 0.021037
+  diameter 0.008
+  positions [
+    -0.06421 -0.07134 -0.003253
+    -0.06421 0.07134 -0.003253
+    0.07848 -0.07134 -0.003253
+    0.07848 0.07134 -0.003253
+  ]
+}
