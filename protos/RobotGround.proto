@@ -1,0 +1,76 @@
+#VRML_SIM R2025a utf8
+# Separate static ground slab. Its top surface is at local z = 0.
+# All dimensions are metres.
+# template language: javascript
+
+EXTERNPROTO "MetricGrid.proto"
+
+PROTO RobotGround [
+  field SFVec3f translation 0 0 0
+  field SFString name "robot ground"
+  field MFString labelTexture []
+  field SFColor color 0.25 0.31 0.38
+  field SFFloat size 1.6
+  field SFFloat thickness 0.12
+  field SFFloat gridSpacing 0.2
+]
+{
+  Solid {
+    translation IS translation
+    name IS name
+    locked TRUE
+    children [
+      Pose {
+        translation 0 0 %<= -fields.thickness.value / 2 >%
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS color
+              roughness 0.9
+              metalness 0
+            }
+            geometry DEF SLAB Box {
+              size %<= fields.size.value >% %<= fields.size.value >% %<= fields.thickness.value >%
+            }
+          }
+        ]
+      }
+      MetricGrid {
+        size IS size
+        spacing IS gridSpacing
+        lineWidth 0.003
+      }
+      Pose {
+        translation 0 %<= -fields.size.value / 2 + 0.14 >% 0.005
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS color
+              roughness 1
+              metalness 0
+            }
+            geometry Box { size %<= fields.size.value - 0.08 >% 0.16 0.002 }
+          }
+          Pose {
+            translation 0 0 0.002
+            children [
+              Shape {
+                appearance PBRAppearance {
+                  baseColorMap ImageTexture { url IS labelTexture }
+                  roughness 1
+                  metalness 0
+                }
+                geometry Plane { size %<= fields.size.value - 0.12 >% 0.13 }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+    boundingObject Pose {
+      translation 0 0 %<= -fields.thickness.value / 2 >%
+      children [ USE SLAB ]
+    }
+    # No Physics node: each ground is an independent fixed collision solid.
+  }
+}

@@ -1,64 +1,105 @@
-# Floor-mounted SCARA and ABB robot world
+# SCARA and Niryo Ned on separate grounds
 
-Open `worlds/scara_robot.wbt` in Webots R2025a. Both robots are fixed to steel floor plates. The floor is 10 m × 10 m, with a 1 m grid.
+Webots scene containing an Epson T6-602S SCARA and the **original Niryo Ned**, each on a separate, fixed ground slab and steel mounting plate. Niryo Ned replaces the ABB arm in the active world.
 
-## Scale
+![SCARA and Niryo Ned at native metre scale on separate grounds](docs/robot-world.png)
 
-The original scene already used Webots' metre-based robot models. Their native mesh, joint and collision dimensions are retained, with no extra scale transform. The ABB is substantially larger than the SCARA in real life too.
+## Getting started
+
+Requirements: Webots R2025a and Python 3 configured as Webots' Python interpreter. The controllers use Webots' bundled Python API and the Python standard library. Internet access is needed to download any referenced Webots models and assets that are not already cached.
+
+1. Open [worlds/scara_robot.wbt](worlds/scara_robot.wbt) in Webots.
+2. Press **Run / Real-time**. Both robots hold their initial joint positions.
+3. Use the labelled 200 mm grids to compare the robots at the same scale. The SCARA is on the left ground and Ned is on the right.
+
+On macOS, you can also launch the scene from the project directory:
+
+```sh
+/Applications/Webots.app/Contents/MacOS/webots --mode=realtime worlds/scara_robot.wbt
+```
+
+## Real-world scale
+
+Both robots use the official Webots R2025a models at their native metre scale. No enlargement, shrinkage or mesh scale transform is applied. Meshes, joint offsets, collision shapes and moving-link physics are unchanged.
 
 | Item | Dimension |
 | --- | --- |
-| Epson T6-602S | Manufacturer's nominal reach: 600 mm |
-| ABB IRB 4600-40/2.55 | Manufacturer's nominal reach: 2.55 m |
-| Floor | 10 m × 10 m |
-| Grid square | 1 m × 1 m |
-| SCARA plate | 340 × 280 × 12 mm |
-| ABB plate | 840 × 700 × 25 mm |
+| Each separate ground | 1.6 × 1.6 m, 120 mm thick |
+| Clear gap between grounds | 400 mm |
+| Grid square | 200 × 200 mm |
+| Robot base origin separation | 2 m |
+| SCARA mounting plate | 340 × 280 × 12 mm |
+| Ned mounting plate | 300 × 300 × 12 mm |
+| Ned model base including feet | Approximately 220 × 220 mm |
 
-The robot models are the supplied Webots approximations, not newly calibrated manufacturer CAD. Nominal reach values identify the real robots; they are not claims of a newly measured simulated workspace. For example, the stock SCARA's mounting-hole spacing and kinematic offsets differ slightly from the Epson drawings. The visible flange bolts follow the supplied mesh holes. Plate dimensions and floor anchors are scene design choices.
+These are the supplied simulation models, not newly calibrated manufacturer CAD. Ground and mounting plate dimensions are scene design choices. The Ned model is the original Ned, not Ned2 or Ned3 Pro.
 
-## How the robots are bolted down
+## Ground and mounting
 
-1. `staticBase TRUE` on **both** robot instances fixes each root base to Webots' static environment. The arm joints remain movable. Visible bolts alone would not fix a robot in the physics simulation.
-2. `GroundMount.proto` adds fixed steel plates with collision boxes and four visible floor anchors per plate. The plates have no `Physics` node, so they cannot fall or slide.
-3. `FlangeBolts.proto` adds four M8-size bolts at the SCARA base and six M16-size bolts at the ABB base, aligned with the existing mesh holes.
-4. Base heights are calculated from the plate top and the mesh underside:
-   - SCARA: `0.012 - (-0.009037) = 0.021037 m`.
-   - ABB: `0.025 - (-0.000003) = 0.025003 m`.
-   - The SCARA's simplified collision box extends about 2 mm below its visible mesh; its fixed base overlaps the static plate by that amount.
-5. `MetricGrid.proto` draws the metre grid. The original 10 m floor size is retained, with a plain industrial floor appearance replacing the checker texture.
-6. `hold_pose.py` holds the robots at their initial joint positions. It replaces sample controllers that required missing factory objects or an incompatible inverse-kinematics setup. No third-party Python libraries are needed.
+- `RobotGround.proto` creates each slab as an independent static solid with its own collision box. There is no shared floor beneath or across the gap.
+- The top of each ground is at z = 0; the slab extends down to z = −0.12 m. Each has a 200 mm grid and robot label.
+- `GroundMount.proto` adds fixed steel plates and four visible ground anchors per plate. The SCARA retains its four visible M8 flange bolts.
+- The SCARA uses `staticBase TRUE`. The official Ned model already has a static root because its root Robot has no `Physics` node; its articulated links remain movable.
+- The SCARA base origin is at z = 0.021037 m, matching its mesh underside (−0.009037 m) to the 12 mm plate top. Its simplified collision box overlaps the plate slightly, as in the original scene.
+- The Ned base origin is at z = 0.0125 m, matching its mesh underside (−0.0005 m) to the 12 mm plate top. Its four rubber feet and base are retained unchanged. The robot is rotated 90° about the vertical axis for a clear side view.
+- `hold_pose.py` holds every motor at its initial zero joint position. Neither controller needs third-party Python packages.
 
-The original world is backed up in `worlds/scara_robot.original.wbt.bak`.
+The original scene remains backed up in `worlds/scara_robot.original.wbt.bak`.
 
 ## Verification
 
-The generated mounting-check world commands the SCARA and ABB base joints through approximately −0.199 to +0.199 radians, then returns them to the initial pose. Across 12 simulated seconds, both base position/orientation matrices had **zero measured change**. Both controllers ran successfully. Results are saved in `docs/mount-check.json`.
+The latest [mounting check](docs/mount-check.json) **passed**. It exercised the joints for 12 simulated seconds and confirmed that both ground slabs are separate, fixed collision solids.
 
-Webots still reports a large mass ratio between the stock ABB link and a 0.001 kg intermediate SCARA link. This comes from the supplied robot physics. The mounting check passes, but it does not certify all possible high-speed motions, payloads or collision conditions.
+| Check | SCARA | Niryo Ned |
+| --- | --- | --- |
+| Maximum measured change in base pose | 0 | 0 |
+| Measured base joint range | −0.199 to +0.199 rad | −0.199 to +0.199 rad |
+| Detected motors | 4 | 8: six arm joints and two gripper motors |
+| Ground size | 1.6 × 1.6 m | 1.6 × 1.6 m |
 
-To regenerate the check world:
+The measured gap between the grounds is 0.4 m. This check verifies the scene's mounting and joint motion; it does not calibrate the models against physical robots.
+
+Generate the validation world:
 
 ```sh
 python3 scripts/prepare_mount_check.py
 ```
 
-Open `worlds/.mount_check.wbt` in Webots and press Run. The check exports the images below and pauses after completion. Open `worlds/scara_robot.wbt` again for the normal pose-holding scene. For an automated run that exits afterward, pass `--quit` to the preparation script and start Webots with `--batch --mode=fast --stdout --stderr` and the generated world path.
+Open `worlds/.mount_check.wbt` in Webots and press Run. The check exports the views below and pauses after completion. Reopen `worlds/scara_robot.wbt` for the normal pose-holding scene.
+
+For a batch check on macOS, run these commands from the project directory:
+
+```sh
+python3 scripts/prepare_mount_check.py --quit
+/Applications/Webots.app/Contents/MacOS/webots --batch --mode=fast --stdout --stderr worlds/.mount_check.wbt
+```
+
+This prints `MOUNT CHECK PASS` or `MOUNT CHECK FAIL`, updates the report and screenshots, then exits Webots with the corresponding success or failure status. On other platforms, replace the application path with your Webots executable.
+
+## Project files
+
+| File | Purpose |
+| --- | --- |
+| [worlds/scara_robot.wbt](worlds/scara_robot.wbt) | Main scene, robot placement and overview camera |
+| [protos/RobotGround.proto](protos/RobotGround.proto) | Separate ground slabs, grids and labels |
+| [protos/GroundMount.proto](protos/GroundMount.proto) | Steel mounting plates and visible ground anchors |
+| [protos/MetricGrid.proto](protos/MetricGrid.proto) | Metric grid markings |
+| [protos/FlangeBolts.proto](protos/FlangeBolts.proto) | SCARA flange fasteners |
+| [controllers/hold_pose/hold_pose.py](controllers/hold_pose/hold_pose.py) | Pose holding and optional joint exercise |
+| [controllers/check_mounts/check_mounts.py](controllers/check_mounts/check_mounts.py) | Mounting checks, report and screenshot export |
+| [scripts/prepare_mount_check.py](scripts/prepare_mount_check.py) | Generates the validation world from the main scene |
 
 ## Views
 
-![Both robots and the metre grid](docs/robot-world.png)
+![SCARA mounting plate](docs/scara-mount.png)
 
-![SCARA flange bolts and floor anchors](docs/scara-mount.png)
+![Niryo Ned mounting plate](docs/ned-mount.png)
 
-![ABB flange bolts and floor anchors](docs/abb-mount.png)
+![Separate ground dimensions](docs/world-dimensions.png)
 
-![Full 10 m square world](docs/world-dimensions.png)
+## Model sources
 
-## References
-
-- [Epson T-series manual: T6 dimensions and nominal reach](https://download.epson.biz/robots/data/us/English/T_Robot.pdf)
-- [ABB robot specifications: IRB 4600-40/2.55](https://library.e.abb.com/public/04e8359da4716f0dc1257d1f00392730/ABB_PR10290EN_R14_Master.pdf)
-- [ABB IRB 4600 mounting screws](https://library.e.abb.com/public/b12745f41a15419c9228b3ccd314935e/3HAC033453%20PM%20IRB%204600-en.pdf)
-- [Webots SCARA model and staticBase implementation](https://github.com/cyberbotics/webots/blob/R2025a/projects/robots/epson/scara_t6/protos/ScaraT6.proto)
-- [Webots ABB model and staticBase implementation](https://github.com/cyberbotics/webots/blob/R2025a/projects/robots/abb/irb/protos/Irb4600-40.proto)
+- [Webots R2025a Niryo Ned: original model, joint geometry and static root](https://github.com/cyberbotics/webots/blob/R2025a/projects/robots/niryo/ned/protos/Ned.proto)
+- [Ned base mesh: native dimensions including rubber feet](https://github.com/cyberbotics/webots/blob/R2025a/projects/robots/niryo/ned/protos/meshes/base_link_4.obj)
+- [Webots R2025a SCARA and staticBase implementation](https://github.com/cyberbotics/webots/blob/R2025a/projects/robots/epson/scara_t6/protos/ScaraT6.proto)
+- [Epson T-series manual](https://download.epson.biz/robots/data/us/English/T_Robot.pdf)

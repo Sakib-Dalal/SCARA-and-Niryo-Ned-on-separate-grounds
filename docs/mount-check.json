@@ -1,26 +1,32 @@
 {
-  "passed": true,
+  "passed": false,
   "simulated_seconds": 12.0,
-  "floor_metres": [
-    10.0,
-    10.0
-  ],
+  "ground_size_metres": {
+    "SCARA": 1.6,
+    "NED": 1.6
+  },
+  "ground_gap_metres": 0.3999999999999999,
+  "separate_static_collision_grounds": {
+    "SCARA": true,
+    "NED": true
+  },
   "maximum_base_pose_change": {
     "SCARA": 0.0,
-    "ABB": 0.0
+    "NED": 0.0
   },
   "measured_base_joint_range_radians": {
     "SCARA": [
-      -0.19916430696435317,
-      0.1991655005955397
+      0.0,
+      0.0
     ],
-    "ABB": [
-      -0.1991714441903243,
-      0.1991726325674387
+    "NED": [
+      0.0,
+      0.0
     ]
   },
   "static_base": {
     "SCARA": 1,
-    "ABB": 1
-  }
+    "NED": true
+  },
+  "motor_count": {}
 }

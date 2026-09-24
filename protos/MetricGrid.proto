@@ -1,10 +1,11 @@
 #VRML_SIM R2025a utf8
-# One-metre floor grid. Thin visual lines have no collision geometry.
+# Metric floor grid. Thin visual lines have no collision geometry.
 # template language: javascript
 
 PROTO MetricGrid [
   field SFFloat size 10
   field SFFloat spacing 1
+  field SFFloat lineWidth 0.008
 ]
 {
   %< const size = fields.size.value; const step = fields.spacing.value; >%
@@ -20,7 +21,7 @@ PROTO MetricGrid [
               metalness 0
               roughness 1
             }
-            geometry Box { size 0.008 %<= size >% 0.002 }
+            geometry Box { size %<= fields.lineWidth.value >% %<= size >% 0.002 }
           }
         ]
       }
@@ -29,7 +30,7 @@ PROTO MetricGrid [
         children [
           Shape {
             appearance USE GRID_PAINT
-            geometry Box { size %<= size >% 0.008 0.002 }
+            geometry Box { size %<= size >% %<= fields.lineWidth.value >% 0.002 }
           }
         ]
       }

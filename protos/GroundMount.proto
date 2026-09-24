@@ -1,6 +1,6 @@
 #VRML_SIM R2025a utf8
 # Steel floor plate and four visible anchor bolts. All dimensions are metres.
-# The robot itself must also set staticBase TRUE; these bolts are visual hardware.
+# The robot must have a static root (e.g. staticBase TRUE); bolts are visual hardware.
 # template language: javascript
 
 PROTO GroundMount [
