@@ -9,7 +9,7 @@ Webots scene containing an Epson T6-602S SCARA and the **original Niryo Ned**, e
 Requirements: Webots R2025a and Python 3 configured as Webots' Python interpreter. The controllers use Webots' bundled Python API and the Python standard library. Internet access is needed to download any referenced Webots models and assets that are not already cached.
 
 1. Open [worlds/scara_robot.wbt](worlds/scara_robot.wbt) in Webots.
-2. Press **Run / Real-time**. Both robots hold their initial joint positions.
+2. Press **Run / Real-time**. Both robots move to the targets in their `scara.py` and `ned.py` controllers, then print their final X, Y, Z coordinates once.
 3. Use the labelled 200 mm grids to compare the robots at the same scale. The SCARA is on the left ground and Ned is on the right.
 
 On macOS, you can also launch the scene from the project directory:
@@ -20,7 +20,7 @@ On macOS, you can also launch the scene from the project directory:
 
 ## Real-world scale
 
-Both robots use the official Webots R2025a models at their native metre scale. No enlargement, shrinkage or mesh scale transform is applied. Meshes, joint offsets, collision shapes and moving-link physics are unchanged.
+Both robots use the official Webots R2025a models at their native metre scale. The local `protos/Ned.proto` copy adds a hand slot for a GPS device. No enlargement, shrinkage or mesh scale transform is applied. Meshes, joint offsets, collision shapes and moving-link physics are unchanged.
 
 | Item | Dimension |
 | --- | --- |
@@ -41,10 +41,20 @@ These are the supplied simulation models, not newly calibrated manufacturer CAD.
 - `GroundMount.proto` adds fixed steel plates and four visible ground anchors per plate. The SCARA retains its four visible M8 flange bolts.
 - The SCARA uses `staticBase TRUE`. The official Ned model already has a static root because its root Robot has no `Physics` node; its articulated links remain movable.
 - The SCARA base origin is at z = 0.021037 m, matching its mesh underside (−0.009037 m) to the 12 mm plate top. Its simplified collision box overlaps the plate slightly, as in the original scene.
-- The Ned base origin is at z = 0.0125 m, matching its mesh underside (−0.0005 m) to the 12 mm plate top. Its four rubber feet and base are retained unchanged. The robot is rotated 90° about the vertical axis for a clear side view.
-- `hold_pose.py` holds every motor at its initial zero joint position. Neither controller needs third-party Python packages.
+- The Ned base origin is at z = 0.0125 m, matching its mesh underside (−0.0005 m) to the 12 mm plate top. Its four rubber feet and base are retained unchanged. The robot is rotated 90° about the negative Z axis (`rotation 0 0 -1 1.5707963267948966`).
+- The main world assigns `scara.py` and `ned.py`. Neither controller needs third-party Python packages.
 
 The original scene remains backed up in `worlds/scara_robot.original.wbt.bak`.
+
+## Final position output
+
+The world includes a GPS named `gps` in each robot's `handSlot`: at SCARA's shaft tool frame and Ned's `hand_link` origin. The printed X, Y, Z values are world coordinates in metres, including each robot's placement on its ground.
+
+Edit `q1`, `q2`, and `q3` in each controller to change the targets. Ned uses radians for all three joints. SCARA uses radians for `q1` and `q2`, and metres for the linear `q3` joint. Each controller moves the joints, then prints the actual X, Y, Z once the GPS position stays still for 0.5 seconds (each coordinate changes by at most 0.000001 m per step). The simulation continues after printing. This reports where the tool stopped, including when an obstacle prevents it from reaching a target.
+
+SCARA's current `q3 = -0.2` command reaches the ground before the full extension; the controller reports that stopped position. A target such as `q3 = -0.18` leaves clearance in this scene.
+
+After updating the scene, reopen `worlds/scara_robot.wbt` from disk before running. Restarting a controller alone does not load the new GPS nodes into an already open world.
 
 ## Verification
 
@@ -85,6 +95,9 @@ This prints `MOUNT CHECK PASS` or `MOUNT CHECK FAIL`, updates the report and scr
 | [protos/GroundMount.proto](protos/GroundMount.proto) | Steel mounting plates and visible ground anchors |
 | [protos/MetricGrid.proto](protos/MetricGrid.proto) | Metric grid markings |
 | [protos/FlangeBolts.proto](protos/FlangeBolts.proto) | SCARA flange fasteners |
+| [protos/Ned.proto](protos/Ned.proto) | Official Ned model extended with a hand slot for the GPS |
+| [controllers/scara/scara.py](controllers/scara/scara.py) | SCARA joint targets and final tool coordinates |
+| [controllers/ned/ned.py](controllers/ned/ned.py) | Ned joint targets and final hand coordinates |
 | [controllers/hold_pose/hold_pose.py](controllers/hold_pose/hold_pose.py) | Pose holding and optional joint exercise |
 | [controllers/check_mounts/check_mounts.py](controllers/check_mounts/check_mounts.py) | Mounting checks, report and screenshot export |
 | [scripts/prepare_mount_check.py](scripts/prepare_mount_check.py) | Generates the validation world from the main scene |

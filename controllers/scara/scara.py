@@ -1,28 +1,45 @@
 from controller import Robot
 
-# Create robot
 robot = Robot()
-
-# Get simulation timestep
 timestep = int(robot.getBasicTimeStep())
 
-print("Timestep:", timestep)
+# q1 and q2 are radians; q3 is metres.
+q1 = 0.3
+q2 = 0.2
+q3 = -0.2
 
-# Get SCARA joint 1
-scara_joint_1 = robot.getDevice("base_arm_motor")
-scara_joint_2 = robot.getDevice("arm_motor")
-scara_joint_3 = robot.getDevice("shaft_linear_motor")
+# Move the three joints.
+joint_names = ('base_arm_motor', 'arm_motor', 'shaft_linear_motor')
+for name, target in zip(joint_names, (q1, q2, q3)):
+    motor = robot.getDevice(name)
+    motor.setVelocity(0.5)
+    motor.setPosition(target)
 
-# Set movement speed
-scara_joint_1.setVelocity(0.5)
-scara_joint_2.setVelocity(0.5)
-scara_joint_3.setVelocity(0.5)
+gps = robot.getDevice("gps")
+if gps is None:
+    raise RuntimeError("Reopen worlds/scara_robot.wbt to load the GPS.")
+gps.enable(timestep)
 
-# Move joint to 0.5 radians
-scara_joint_1.setPosition(0.3)
-scara_joint_2.setPosition(0.2)
-scara_joint_3.setPosition(-0.2)
+# Print once after the tool position stays still for 0.5 seconds.
+previous_position = None
+still_time = 0
+position_printed = False
 
-# Keep simulation running
 while robot.step(timestep) != -1:
-    pass
+    if position_printed:
+        continue
+
+    position = gps.getValues()
+    if previous_position is not None and all(
+        abs(current - previous) <= 0.000001
+        for current, previous in zip(position, previous_position)
+    ):
+        still_time += timestep
+    else:
+        still_time = 0
+    previous_position = position
+
+    if still_time >= 500:
+        x, y, z = position
+        print(f"SCARA Final Position -> X: {x:.4f}, Y: {y:.4f}, Z: {z:.4f}", flush=True)
+        position_printed = True

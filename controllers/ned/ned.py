@@ -1,28 +1,45 @@
 from controller import Robot
 
-# Create robot
 robot = Robot()
-
-# Get simulation timestep
 timestep = int(robot.getBasicTimeStep())
 
-print("Timestep:", timestep)
+# Joint targets in radians.
+q1 = 0.0
+q2 = 0.0
+q3 = 0.0
 
-# Get Ned joint 1
-ned_joint_1 = robot.getDevice("joint_1")
-ned_joint_2 = robot.getDevice("joint_2")
-ned_joint_3 = robot.getDevice("joint_3")
+# Move the three joints.
+joint_names = ('joint_1', 'joint_2', 'joint_3')
+for name, target in zip(joint_names, (q1, q2, q3)):
+    motor = robot.getDevice(name)
+    motor.setVelocity(0.5)
+    motor.setPosition(target)
 
-# Set movement speed
-ned_joint_1.setVelocity(0.5)
-ned_joint_2.setVelocity(0.5)
-ned_joint_3.setVelocity(0.5)
+gps = robot.getDevice("gps")
+if gps is None:
+    raise RuntimeError("Reopen worlds/scara_robot.wbt to load the GPS.")
+gps.enable(timestep)
 
-# Move joint to 0.5 radians
-ned_joint_1.setPosition(0.0)
-ned_joint_2.setPosition(0.0)
-ned_joint_3.setPosition(0.0)
+# Print once after the tool position stays still for 0.5 seconds.
+previous_position = None
+still_time = 0
+position_printed = False
 
-# Keep simulation running
 while robot.step(timestep) != -1:
-    pass
+    if position_printed:
+        continue
+
+    position = gps.getValues()
+    if previous_position is not None and all(
+        abs(current - previous) <= 0.000001
+        for current, previous in zip(position, previous_position)
+    ):
+        still_time += timestep
+    else:
+        still_time = 0
+    previous_position = position
+
+    if still_time >= 500:
+        x, y, z = position
+        print(f"Ned Final Position -> X: {x:.4f}, Y: {y:.4f}, Z: {z:.4f}", flush=True)
+        position_printed = True

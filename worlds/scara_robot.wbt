@@ -4,7 +4,7 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "../protos/RobotGround.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/epson/scara_t6/protos/ScaraT6.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/niryo/ned/protos/Ned.proto"
+EXTERNPROTO "../protos/Ned.proto"
 EXTERNPROTO "../protos/GroundMount.proto"
 EXTERNPROTO "../protos/FlangeBolts.proto"
 
@@ -47,44 +47,29 @@ DEF NED_MOUNT GroundMount {
   boltDiameter 0.008
 }
 DEF NED Ned {
-  hidden position_0_0 4.741691456804076e-07
-  hidden rotation_1 0 0 0.9999999999999999 4.740349567111404e-07
-  hidden position_1_0 5.530303523544378e-07
-  hidden rotation_2 -2.765152666594507e-07 -0.9999999999999234 2.767353699316717e-07 1.5700000000000762
-  hidden position_2_0 5.043091865751262e-07
-  hidden rotation_3 0 0 1 5.040030039932671e-07
-  hidden position_3_0 -2.784924433285596e-07
-  hidden rotation_4 -0.5775031214701261 -0.5775032823005175 -0.5770442822040521 2.093475160702382
-  hidden position_4_0 -2.391751606723431e-09
-  hidden rotation_5 -0.00039799874108041415 -0.9999998415969896 0.00039799874107860267 1.5707959999990482
-  hidden position_5_0 -3.5006779697255297e-09
-  hidden rotation_6 -1.7503395576147015e-09 1 -1.751732809671932e-09 1.57
-  hidden position_7_0 5.263297397018367e-11
-  hidden position_7_1 -5.2632556266583133e-11
-  hidden translation_8 0.01455 -0.024400000000000213 0.009614000052632974
-  hidden translation_9 0.01455 -0.024400000000000213 -0.011065999947367443
   translation 2 0 0.0125
-  rotation 0 0 1 1.5707963267948966
+  rotation 0 0 -1 1.5707963267948966
   name "Niryo Ned"
-  controller "hold_pose"
+  controller "ned"
+  handSlot [
+    GPS {
+      name "gps"
+    }
+  ]
 }
 DEF SCARA_MOUNT GroundMount {
   translation 0.013 0 0
   name "SCARA floor plate - four M12 visual anchors"
 }
 DEF SCARA ScaraT6 {
-  hidden position_0_0 -9.015418712010614e-06
-  hidden translation_16 2.438341195620808e-12 5.409251227133093e-07 2.7755575615628914e-17
-  hidden rotation_16 0 0 -1 9.015436504424829e-06
-  hidden position_16_0 2.3509465006919407e-06
-  hidden translation_18 1.1754751848107314e-08 -1.6456611687080958e-08 -6.938893903907228e-18
-  hidden rotation_18 0 0 1 2.3509858157365637e-06
-  hidden position_18_0 7.229473650863854e-10
-  hidden position_27_0 -7.847842145845426e-06
-  hidden translation_28 0 0 -7.847842145845426e-06
   translation 0 0 0.021037
-  controller "hold_pose"
+  controller "scara"
   staticBase TRUE
+  handSlot [
+    GPS {
+      name "gps"
+    }
+  ]
 }
 FlangeBolts {
   translation 0 0 0.021037
